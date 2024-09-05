@@ -1,4 +1,6 @@
 "use strict";
+import { OpenWeatherKey } from "./keys.js"
+
 
 // Get a random background image
 fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=nature")
@@ -32,3 +34,30 @@ function updateTime(){
 }
 updateTime();
 setInterval(() => { updateTime();}, oneMinute);
+
+// Weather Display
+if (navigator.geolocation){                             // Does browser support Geolocation?
+    navigator.geolocation.getCurrentPosition(
+        success => {
+            const lat = success.coords.latitude;
+            const lon = success.coords.longitude;
+            fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OpenWeatherKey}`)
+                .then(res => res.json())
+                // catch non-200 HTTP responses
+                .then(res => {
+                    console.log("weather", res);
+                })
+                .catch(error => {
+                    alert("Something broke. Check console");
+                    console.log(error);
+                })
+        },
+        error => {
+            alert("Something broke. Check console");
+            console.log(error);
+        }
+    );
+
+} else {
+    console.log("This browser does not support Geo Location services.");
+}
