@@ -15,3 +15,20 @@ fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&que
         document.body.style.backgroundImage = "url(./include/mountain-photo-by-kalen-emsley.jpeg)";
         document.getElementById("photographer").textContent = "Kalen Emsley";
     });
+
+
+// Time display
+// Run once, then every minute thereafter
+const oneMinute = 60 * 1000;        // 60 seconds x 1000 milliseconds
+function updateTime(){
+    const time = new Date();
+    const timeOptions = {
+        timeZoneName: "short",          // GMT+2
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true
+    }
+    document.getElementById("clock").textContent = `${time.toLocaleString("en-us", timeOptions)}`;
+}
+updateTime();
+setInterval(() => { updateTime();}, oneMinute);
