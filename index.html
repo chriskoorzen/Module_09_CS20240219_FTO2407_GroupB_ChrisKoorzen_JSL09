@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,12 +9,16 @@
 
     <script defer src="index.js"></script>
 </head>
-<body class="bg-no-repeat bg-center bg-cover bg-fixed">
-    <div class="">
-        <p id="crypto">Crypto</p>
-        <p id="weather">Weather</p>
+<body class="h-full p-6 bg-no-repeat bg-center bg-cover bg-fixed">
+    <div class="size-full flex flex-col justify-between font-mono text-lg text-zinc-50 font-bold drop-shadow">
+        <div class="flex flex-row justify-between">
+            <p id="crypto">Crypto</p>
+            <p id="weather">Weather</p>
+        </div>
+        <p id="clock" class="place-self-center text-7xl">Time Here</p>
+        <p class="text-xl">By: 
+            <span id="photographer">Photographer Here</span>
+        </p>
     </div>
-    <p id="clock">Time Here</p>
-    <p>By: <span id="photographer">Photographer Here</span></p>
 </body>
 </html>
