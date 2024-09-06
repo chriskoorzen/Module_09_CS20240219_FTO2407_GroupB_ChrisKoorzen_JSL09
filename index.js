@@ -33,7 +33,7 @@ function updateTime(){
     document.getElementById("clock").textContent = `${time.toLocaleString("en-us", timeOptions)}`;
 }
 updateTime();
-setInterval(() => { updateTime();}, oneMinute);
+setInterval(() => { updateTime(); }, oneMinute);
 
 // Weather Display
 if (navigator.geolocation){                             // Does browser support Geolocation?
@@ -41,7 +41,7 @@ if (navigator.geolocation){                             // Does browser support 
         success => {
             const lat = success.coords.latitude;
             const lon = success.coords.longitude;
-            fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OpenWeatherKey}`)
+            fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OpenWeatherKey}&units=metric`)
                 .then(res => res.json())
                 // catch non-200 HTTP responses
                 .then(res => {
