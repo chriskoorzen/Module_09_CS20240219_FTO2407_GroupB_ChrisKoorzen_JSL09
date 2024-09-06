@@ -30,7 +30,8 @@ function updateTime(){
         minute: "2-digit",
         hour12: true
     }
-    document.getElementById("clock").textContent = `${time.toLocaleString("en-us", timeOptions)}`;
+    document.getElementById("clock").textContent = `${time.toLocaleString("en-us", timeOptions).slice(0,8)}`;
+    document.getElementById("timezone").textContent = `${time.toLocaleString("en-us", timeOptions).slice(9)}`;
 }
 updateTime();
 setInterval(() => { updateTime(); }, oneMinute);
