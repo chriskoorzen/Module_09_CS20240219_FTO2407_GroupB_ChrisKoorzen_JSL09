@@ -123,8 +123,8 @@ fetch("https://api.coingecko.com/api/v3/coins/ethereum?localization=false&ticker
         </div>
         <hr class="my-3">
         <div id="crypto-extra" class="hidden">
-            <div class="bg-gray-800 w-fit p-4 rounded-lg">
-                <p class="text-sm ml-6 py-2">Last 7 days: 
+            <div class="bg-gray-800 p-4 rounded-lg">
+                <p class="text-sm ml-2 py-2">Last 7 days: 
                     <span style="color:${data.market_data.price_change_percentage_7d > 0 ? "green":"red"};">
                         ${(data.market_data.price_change_percentage_7d).toFixed(2)} %
                     </span>
@@ -141,6 +141,73 @@ fetch("https://api.coingecko.com/api/v3/coins/ethereum?localization=false&ticker
         coin.addEventListener("click", () => {
             document.getElementById("crypto-extra").classList.toggle("hidden");
         });
+
+        // --- Create a line chart using sparkline data from CoinGecko api ---
+        // Sparkline data is updated every 6 hours
+        // https://support.coingecko.com/hc/en-us/articles/4538729548569-How-often-does-the-price-data-update-for-the-sparkline-in-coins-markets-update
+        // Assume update intervals at 00:00, 06:00, 12:00, 18:00 UTC (tested)
+        // Expect a 168-element array (price for each hour for last 7 days)
+
+        // Get last update time
+        const timePoint = new Date(data.market_data.last_updated);
+
+        // Determine the last update time and set to the closest
+        // known update interval
+        timePoint.getUTCHours() < 6 ? timePoint.setUTCHours(0, 0) :
+        timePoint.getUTCHours() < 12 ? timePoint.setUTCHours(6, 0) :
+        timePoint.getUTCHours() < 18 ? timePoint.setUTCHours(12, 0) :
+        timePoint.setUTCHours(18, 0);
+
+        // Rewind to 7 days ago, plus 1 hour to init loop addition below
+        timePoint.setUTCHours(timePoint.getUTCHours() - (168 + 1));
+
+        // Build label Array for x-axis
+        // This maps price data to its hourly status (168 price data points)
+        const labels = new Array();
+        for (let i=0; i < 168; i++){
+            // Move forward by one hour
+            timePoint.setUTCHours(timePoint.getUTCHours() + 1);
+            // And get its string 
+            labels.push(timePoint.toString().slice(4, 21));
+        }
+
+        // Refer to chartjs config docs
+        const config = {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Price USD $',
+                    data: data.market_data.sparkline_7d.price,      // Sparkline - price data array
+                    fill: false,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1,                                   // Slightly smooth out point connections
+                    pointStyle: false
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        ticks: {
+                            display: false  // Do not show x-axis labels, only tooltip on hover
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        align: 'center',
+                        position: 'bottom',
+                        labels: {
+                            boxHeight: 0,
+                            boxWidth: 20
+                        }
+                    }
+                }
+            }
+        };
+
+        // Build chart using chartjs api
+        new Chart(document.getElementById("crypto-chart"), config);
 
     })
     .catch(error => {
