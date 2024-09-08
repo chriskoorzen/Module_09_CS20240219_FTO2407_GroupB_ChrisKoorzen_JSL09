@@ -1,5 +1,5 @@
 "use strict";
-import { OpenWeatherKey } from "./keys.js"
+import { OpenWeatherKey } from "./keys.js";
 
 
 // Get a random background image
@@ -55,7 +55,7 @@ if (navigator.geolocation){                             // Does browser support 
                             ${res.weather.map(obj => "<p>"+obj.description+"</p>").join('')}
                         </div>
                         <div class="">
-                            <p>icon</p>
+                            <img class="inline" src="https://openweathermap.org/img/wn/${res.weather[0].icon}.png"/>
                             <p>${res.main.temp}&deg;C</p>
                         </div>
                     </div>
@@ -104,6 +104,11 @@ if (navigator.geolocation){                             // Does browser support 
         }
     );
 
+} else {
+    console.log("This browser does not support Geo Location services.");
+}
+
+
 // Market Data Display
 // We're interested in Ethereum only
 fetch("https://api.coingecko.com/api/v3/coins/ethereum?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=true")
@@ -113,7 +118,9 @@ fetch("https://api.coingecko.com/api/v3/coins/ethereum?localization=false&ticker
         // Main crypto coin widget creation
         const coin_content = `
         <div class="flex flex-row justify-between items-center">
-            <p class="text-2xl">${data.name}</p>
+            <p class="text-2xl">
+                <img class="inline -ml-3" src="https://coin-images.coingecko.com/coins/images/279/small/ethereum.png"><span>${data.name}</span>
+            </p>
             <p>$ ${(data.market_data.current_price.usd).toFixed(2)}</p>
             <p>${(data.market_data.price_change_percentage_1h_in_currency.usd).toFixed(2)}%</p>
         </div>
