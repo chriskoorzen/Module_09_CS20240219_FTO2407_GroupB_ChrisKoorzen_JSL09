@@ -104,6 +104,46 @@ if (navigator.geolocation){                             // Does browser support 
         }
     );
 
-} else {
-    console.log("This browser does not support Geo Location services.");
-}
+// Market Data Display
+// We're interested in Ethereum only
+fetch("https://api.coingecko.com/api/v3/coins/ethereum?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=true")
+    .then(res => res.json())
+    .then(data => {
+
+        // Main crypto coin widget creation
+        const coin_content = `
+        <div class="flex flex-row justify-between items-center">
+            <p class="text-2xl">${data.name}</p>
+            <p>$ ${(data.market_data.current_price.usd).toFixed(2)}</p>
+            <p>${(data.market_data.price_change_percentage_1h_in_currency.usd).toFixed(2)}%</p>
+        </div>
+        <div class="flex flex-row justify-between">
+            <p><img class="inline" src="./include/icons/coin/arrow-up-green.png"> $ ${(data.market_data.high_24h.usd).toFixed(2)}</p>
+            <p><img class="inline" src="./include/icons/coin/arrow-down-red.png"> $ ${(data.market_data.low_24h.usd).toFixed(2)}</p>
+        </div>
+        <hr class="my-3">
+        <div id="crypto-extra" class="hidden">
+            <div class="bg-gray-800 w-fit p-4 rounded-lg">
+                <p class="text-sm ml-6 py-2">Last 7 days: 
+                    <span style="color:${data.market_data.price_change_percentage_7d > 0 ? "green":"red"};">
+                        ${(data.market_data.price_change_percentage_7d).toFixed(2)} %
+                    </span>
+                </p>
+                <canvas id="crypto-chart" class="w-96"></canvas>
+            </div>
+        </div>`;
+
+        // Add to document
+        const coin = document.getElementById("crypto");
+        coin.innerHTML = coin_content;
+
+        // Register event listener to toggle 'crypto-extra'
+        coin.addEventListener("click", () => {
+            document.getElementById("crypto-extra").classList.toggle("hidden");
+        });
+
+    })
+    .catch(error => {
+        alert("Something broke. Check console");        // Failures shouldn't be silent
+        console.log(error);
+    });
