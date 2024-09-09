@@ -4,7 +4,10 @@ import { OpenWeatherKey } from "./keys.js";
 
 // Get a random background image
 fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=nature")
-    .then(res => res.json())
+    .then(result => {
+        if (result.ok){ return result.json(); }
+        else { console.log(response); throw Error("Scrimba Image API failed"); }
+    })
     .then(data => {
         console.log(data.urls.full);
         console.log(data.user.name);
@@ -14,6 +17,8 @@ fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&que
     .catch(error => {
         alert("Something broke. Check console");        // Failures shouldn't be silent
         console.log(error);
+
+        // Fallback Image
         document.body.style.backgroundImage = "url(./include/mountain-photo-by-kalen-emsley.jpeg)";
         document.getElementById("photographer").textContent = "Kalen Emsley";
     });
@@ -43,48 +48,51 @@ if (navigator.geolocation){                             // Does browser support 
             const lat = success.coords.latitude;
             const lon = success.coords.longitude;
             fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OpenWeatherKey}&units=metric`)
-                .then(res => res.json())
-                // catch non-200 HTTP responses
-                .then(res => {
+                .then(response => {
+                    if (response.ok) { return response.json(); }
+                    else { console.log(response); throw Error("OpenWeatherMap API failed");}
+                })
+                .then(data => {
 
                     // Main weather widget creation
+                    console.log("Wind Direction", data.wind.deg);
                     const weather_content = `
                     <div class="flex flex-row justify-between items-center">
                         <div class="mr-8">
-                            <p class="text-3xl">${res.name}</p>
-                            ${res.weather.map(obj => "<p>"+obj.description+"</p>").join('')}
+                            <p class="text-3xl">${data.name}</p>
+                            ${data.weather.map(obj => "<p>"+obj.description+"</p>").join('')}
                         </div>
                         <div class="">
-                            <img class="inline" src="https://openweathermap.org/img/wn/${res.weather[0].icon}.png"/>
-                            <p>${res.main.temp}&deg;C</p>
+                            <img class="inline" src="https://openweathermap.org/img/wn/${data.weather[0].icon}.png"/>
+                            <p>${data.main.temp}&deg;C</p>
                         </div>
                     </div>
                     <hr class="my-3">
                     <div id="weather-extra" class="hidden">
                         <div>
-                            <p>Feels like ${res.main.feels_like}&deg;C</p>
-                            <p>Max ${Math.round(res.main.temp_max)}&deg;C Min ${Math.round(res.main.temp_min)}&deg;C</p>
-                            <p>Humidity: ${res.main.humidity}%</p>
-                            <p>Cloud cover: ${res.clouds.all}%</p>
+                            <p>Feels like ${data.main.feels_like}&deg;C</p>
+                            <p>Max ${Math.round(data.main.temp_max)}&deg;C Min ${Math.round(data.main.temp_min)}&deg;C</p>
+                            <p>Humidity: ${data.main.humidity}%</p>
+                            <p>Cloud cover: ${data.clouds.all}%</p>
                         </div>
                         <hr class="my-3">
                         <div class="flex flex-row justify-between">
                             <div>
                                 <p>Wind from ${
-                                    (res.wind.deg > 337 || res.wind.deg < 23) ? "N":
-                                    (res.wind.deg >= 23 && res.wind.deg < 68) ? "NE":
-                                    (res.wind.deg >= 68 && res.wind.deg < 113) ? "E":
-                                    (res.wind.deg >= 113 && res.wind.deg < 158) ? "SE":
-                                    (res.wind.deg >= 158 && res.wind.deg < 203) ? "S":
-                                    (res.wind.deg >= 203 && res.wind.deg < 248) ? "SW":
-                                    (res.wind.deg >= 248 && res.wind.deg < 293) ? "W":
+                                    (data.wind.deg > 337 || data.wind.deg < 23) ? "N":
+                                    (data.wind.deg >= 23 && data.wind.deg < 68) ? "NE":
+                                    (data.wind.deg >= 68 && data.wind.deg < 113) ? "E":
+                                    (data.wind.deg >= 113 && data.wind.deg < 158) ? "SE":
+                                    (data.wind.deg >= 158 && data.wind.deg < 203) ? "S":
+                                    (data.wind.deg >= 203 && data.wind.deg < 248) ? "SW":
+                                    (data.wind.deg >= 248 && data.wind.deg < 293) ? "W":
                                     "NW"
                                 } direction</p>
-                                <p>${res.wind.speed} km/h</p>
-                                <p>Gusts of ${res.wind.gust} km/h</p>
+                                <p>${data.wind.speed} km/h</p>
+                                <p>Gusts of ${data.wind.gust} km/h</p>
                             </div>
                             <div class="rounded-full bg-stone-600 size-20">
-                                <svg class="h-16 mx-auto mt-2" style="rotate:${180+res.wind.deg}deg;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 40 210" preserveAspectRatio="xMidYMid meet" >
+                                <svg class="h-16 mx-auto mt-2" style="rotate:${180+data.wind.deg}deg;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 40 210" preserveAspectRatio="xMidYMid meet" >
                                     <g fill="none" stroke="orange" stroke-width="5" stroke-linejoin="round">
                                         <path d="M 20 10 V 100" stroke-dasharray="5,6"></path>
                                         <path d="M 20 100 V 200"></path>
@@ -97,8 +105,8 @@ if (navigator.geolocation){                             // Does browser support 
                         </div>
                         <hr class="my-3">
                         <div class="flex flex-row justify-between">
-                            <p>rise: ${ (new Date(res.sys.sunrise*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
-                            <p>set: ${ (new Date(res.sys.sunset*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
+                            <p>rise: ${ (new Date(data.sys.sunrise*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
+                            <p>set: ${ (new Date(data.sys.sunset*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
                         </div>
                     </div>`;
 
@@ -131,7 +139,10 @@ if (navigator.geolocation){                             // Does browser support 
 // Market Data Display
 // We're interested in Ethereum only
 fetch("https://api.coingecko.com/api/v3/coins/ethereum?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=true")
-    .then(res => res.json())
+    .then(result => {
+        if (result.ok){ return result.json(); }
+        else { console.log(response); throw Error("Coin Gecko API failed"); }
+    })
     .then(data => {
 
         // Main crypto coin widget creation
