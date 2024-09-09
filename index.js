@@ -53,7 +53,6 @@ function update_weather_data(lat, lon){
     .then(data => {
 
         // Main weather widget creation
-        console.log("Wind Direction", data.wind.deg);
         const weather_content = `
         <div class="flex flex-row justify-between items-center">
             <div class="mr-8">
