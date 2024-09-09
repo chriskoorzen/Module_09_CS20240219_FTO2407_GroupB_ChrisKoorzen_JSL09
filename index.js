@@ -2,7 +2,7 @@
 import { OpenWeatherKey } from "./keys.js";
 
 const oneMinute = 60 * 1000;        // 60 seconds x 1000 milliseconds
-const onehour = 60 * 60 * 1000;     // 60 minutes x 60 seconds x 1000 milliseconds
+const oneHour = 60 * 60 * 1000;     // 60 minutes x 60 seconds x 1000 milliseconds
 
 // Get a random background image
 fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=nature")
@@ -44,97 +44,147 @@ setInterval(() => { updateTime(); }, oneMinute);
 
 // Weather Display
 // Run once, then every hour thereafter
+function update_weather_data(lat, lon){
+    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OpenWeatherKey}&units=metric`)
+    .then(response => {
+        if (response.ok) { return response.json(); }
+        else { console.log(response); throw Error("OpenWeatherMap API failed");}
+    })
+    .then(data => {
+
+        // Main weather widget creation
+        console.log("Wind Direction", data.wind.deg);
+        const weather_content = `
+        <div class="flex flex-row justify-between items-center">
+            <div class="mr-8">
+                <p class="text-3xl">${data.name}</p>
+                ${data.weather.map(obj => "<p>"+obj.description+"</p>").join('')}
+            </div>
+            <div class="">
+                <img class="inline" src="https://openweathermap.org/img/wn/${data.weather[0].icon}.png"/>
+                <p>${data.main.temp}&deg;C</p>
+            </div>
+        </div>
+        <hr class="my-3">
+        <div id="weather-extra" class="hidden">
+            <div>
+                <p>Feels like ${data.main.feels_like}&deg;C</p>
+                <p>Max ${Math.round(data.main.temp_max)}&deg;C Min ${Math.round(data.main.temp_min)}&deg;C</p>
+                <p>Humidity: ${data.main.humidity}%</p>
+                <p>Cloud cover: ${data.clouds.all}%</p>
+            </div>
+            <hr class="my-3">
+            <div class="flex flex-row justify-between">
+                <div>
+                    <p>Wind from ${
+                        (data.wind.deg > 337 || data.wind.deg < 23) ? "N":
+                        (data.wind.deg >= 23 && data.wind.deg < 68) ? "NE":
+                        (data.wind.deg >= 68 && data.wind.deg < 113) ? "E":
+                        (data.wind.deg >= 113 && data.wind.deg < 158) ? "SE":
+                        (data.wind.deg >= 158 && data.wind.deg < 203) ? "S":
+                        (data.wind.deg >= 203 && data.wind.deg < 248) ? "SW":
+                        (data.wind.deg >= 248 && data.wind.deg < 293) ? "W":
+                        "NW"
+                    } direction</p>
+                    <p>${data.wind.speed} km/h</p>
+                    ${ data.wind.gust ? "<p>Gusts of " + data.wind.gust + "km/h</p>": "" }
+                </div>
+                <div class="rounded-full bg-stone-600 size-20">
+                    <svg class="h-16 mx-auto mt-2" style="rotate:${180+data.wind.deg}deg;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 40 210" preserveAspectRatio="xMidYMid meet" >
+                        <g fill="none" stroke="orange" stroke-width="5" stroke-linejoin="round">
+                            <path d="M 20 10 V 100" stroke-dasharray="5,6"></path>
+                            <path d="M 20 100 V 200"></path>
+                            <path d="M 0 40 L 20 10 L 40 40"></path>
+                            <path d="M 0 180 L 20 150 L 40 180"></path>
+                            <path d="M 0 200 L 20 170 L 40 200"></path>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="flex flex-row justify-between">
+                <p>rise: ${ (new Date(data.sys.sunrise*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
+                <p>set: ${ (new Date(data.sys.sunset*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
+            </div>
+        </div>`;
+
+        // Add to document
+        const weather = document.getElementById("weather");
+        weather.innerHTML = weather_content;
+
+        // Register event listener to toggle 'weather-extra'
+        weather.addEventListener("click", () => {
+            document.getElementById("weather-extra").classList.toggle("hidden");
+        });
+
+    })
+    .catch(error => {
+        alert("Something broke. Check console");
+        console.log(error);
+    })
+}
+
+function manual_weather(header_message){
+    const weather_tab = document.getElementById("weather");
+
+    // Construct a form to receive manual inputs from user
+    const c_form = document.createElement("form");
+
+    c_form.innerHTML = `
+        <label for="latitude">Latitude</label>
+        <input class="text-black"
+            type="number" id="latitude" min="-90" max="90" step="0.01" required>
+        <br>
+        <label for="longitude">Longitude</label>
+        <input class="text-black"
+            type="number" id="longitude" min="-180" max="180" step="0.01" required>
+        <br>
+        <button type="submit">Get Weather Forecast</button>
+    `;
+
+    weather_tab.innerHTML = `
+        <p>${header_message}</p>
+        <p>Manually get weather forecast</p>
+    `;
+    weather_tab.append(c_form);
+
+    //  Process user inputs
+    c_form.addEventListener("submit", (event) =>{
+        event.preventDefault();
+
+        const latitude =  c_form.elements["latitude"].value;
+        const longitude = c_form.elements["longitude"].value;
+
+        // Call once and set interval
+        update_weather_data(latitude,longitude);
+        setInterval(() => { update_weather_data(latitude,longitude); }, oneHour);
+    })
+}
+
 if (navigator.geolocation){                             // Does browser support Geolocation?
     navigator.geolocation.getCurrentPosition(
         success => {
-            const lat = success.coords.latitude;
-            const lon = success.coords.longitude;
-            fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OpenWeatherKey}&units=metric`)
-                .then(response => {
-                    if (response.ok) { return response.json(); }
-                    else { console.log(response); throw Error("OpenWeatherMap API failed");}
-                })
-                .then(data => {
+            // Attempt automatic weather retrieval
+            const latitude = success.coords.latitude;
+            const longitude = success.coords.longitude;
 
-                    // Main weather widget creation
-                    console.log("Wind Direction", data.wind.deg);
-                    const weather_content = `
-                    <div class="flex flex-row justify-between items-center">
-                        <div class="mr-8">
-                            <p class="text-3xl">${data.name}</p>
-                            ${data.weather.map(obj => "<p>"+obj.description+"</p>").join('')}
-                        </div>
-                        <div class="">
-                            <img class="inline" src="https://openweathermap.org/img/wn/${data.weather[0].icon}.png"/>
-                            <p>${data.main.temp}&deg;C</p>
-                        </div>
-                    </div>
-                    <hr class="my-3">
-                    <div id="weather-extra" class="hidden">
-                        <div>
-                            <p>Feels like ${data.main.feels_like}&deg;C</p>
-                            <p>Max ${Math.round(data.main.temp_max)}&deg;C Min ${Math.round(data.main.temp_min)}&deg;C</p>
-                            <p>Humidity: ${data.main.humidity}%</p>
-                            <p>Cloud cover: ${data.clouds.all}%</p>
-                        </div>
-                        <hr class="my-3">
-                        <div class="flex flex-row justify-between">
-                            <div>
-                                <p>Wind from ${
-                                    (data.wind.deg > 337 || data.wind.deg < 23) ? "N":
-                                    (data.wind.deg >= 23 && data.wind.deg < 68) ? "NE":
-                                    (data.wind.deg >= 68 && data.wind.deg < 113) ? "E":
-                                    (data.wind.deg >= 113 && data.wind.deg < 158) ? "SE":
-                                    (data.wind.deg >= 158 && data.wind.deg < 203) ? "S":
-                                    (data.wind.deg >= 203 && data.wind.deg < 248) ? "SW":
-                                    (data.wind.deg >= 248 && data.wind.deg < 293) ? "W":
-                                    "NW"
-                                } direction</p>
-                                <p>${data.wind.speed} km/h</p>
-                                <p>Gusts of ${data.wind.gust} km/h</p>
-                            </div>
-                            <div class="rounded-full bg-stone-600 size-20">
-                                <svg class="h-16 mx-auto mt-2" style="rotate:${180+data.wind.deg}deg;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 40 210" preserveAspectRatio="xMidYMid meet" >
-                                    <g fill="none" stroke="orange" stroke-width="5" stroke-linejoin="round">
-                                        <path d="M 20 10 V 100" stroke-dasharray="5,6"></path>
-                                        <path d="M 20 100 V 200"></path>
-                                        <path d="M 0 40 L 20 10 L 40 40"></path>
-                                        <path d="M 0 180 L 20 150 L 40 180"></path>
-                                        <path d="M 0 200 L 20 170 L 40 200"></path>
-                                    </g>
-                                </svg>
-                            </div>
-                        </div>
-                        <hr class="my-3">
-                        <div class="flex flex-row justify-between">
-                            <p>rise: ${ (new Date(data.sys.sunrise*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
-                            <p>set: ${ (new Date(data.sys.sunset*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
-                        </div>
-                    </div>`;
-
-                    // Add to document
-                    const weather = document.getElementById("weather");
-                    weather.innerHTML = weather_content;
-
-                    // Register event listener to toggle 'weather-extra'
-                    weather.addEventListener("click", () => {
-                        document.getElementById("weather-extra").classList.toggle("hidden");
-                    });
-
-                })
-                .catch(error => {
-                    alert("Something broke. Check console");
-                    console.log(error);
-                })
+            // Call once and set interval
+            update_weather_data(latitude, longitude);
+            setInterval(() => { update_weather_data(latitude,longitude); }, oneHour);
         },
         error => {
-            alert("Something broke. Check console");
+            // Attempt manual input
             console.log(error);
+            if (error.code === GeolocationPositionError.PERMISSION_DENIED){
+                manual_weather("GeoLocation Permission Denied");
+            }
         }
     );
 
 } else {
+    // Attempt manual input
     console.log("This browser does not support Geo Location services.");
+    manual_weather("Browser does not support GeoLocation service");
 }
 
 
@@ -257,4 +307,4 @@ function update_market_data(){
     });
 }
 update_market_data();
-setInterval( () => { update_market_data(); }, onehour);
+setInterval( () => { update_market_data(); }, oneHour);
