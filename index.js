@@ -121,6 +121,12 @@ function update_weather_data(lat, lon){
     .catch(error => {
         alert("Something broke. Check console");
         console.log(error);
+        
+        // Set error content display
+        document.getElementById("weather").innerHTML = `
+            <img class="size-12 inline" src="./include/icons/error.png">
+            <p class="inline">Failed to load weather data.</p>
+        `;
     })
 }
 
@@ -152,6 +158,12 @@ function manual_weather(header_message){
     //  Process user inputs
     c_form.addEventListener("submit", (event) =>{
         event.preventDefault();
+        
+        // Set loading image
+        weather_tab.innerHTML = `
+            <img class="size-12 inline" src="./include/icons/loading-transparent-bg.gif">
+            <p class="inline">Loading weather data...</p>
+        `;
 
         const latitude =  c_form.elements["latitude"].value;
         const longitude = c_form.elements["longitude"].value;
@@ -306,6 +318,12 @@ function update_market_data(){
     .catch(error => {
         alert("Something broke. Check console");        // Failures shouldn't be silent
         console.log(error);
+
+        // Set error content display
+        document.getElementById("crypto").innerHTML = `
+            <img class="size-12 inline" src="./include/icons/error.png">
+            <p class="inline">Failed to load coin data.</p>
+        `;
     });
 }
 update_market_data();
