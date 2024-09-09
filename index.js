@@ -35,10 +35,10 @@ function updateTime(){
         hour: "2-digit",
         minute: "2-digit",
         hour12: true
-    }
+    };
     document.getElementById("clock").textContent = `${time.toLocaleString("en-us", timeOptions).slice(0,8)}`;
     document.getElementById("timezone").textContent = `${time.toLocaleString("en-us", timeOptions).slice(9)}`;
-}
+};
 updateTime();
 setInterval(() => { updateTime(); }, oneMinute);
 
@@ -126,8 +126,8 @@ function update_weather_data(lat, lon){
             <img class="size-12 inline" src="./include/icons/error.png">
             <p class="inline">Failed to load weather data.</p>
         `;
-    })
-}
+    });
+};
 
 function manual_weather(header_message){
     const weather_tab = document.getElementById("weather");
@@ -170,8 +170,8 @@ function manual_weather(header_message){
         // Call once and set interval
         update_weather_data(latitude,longitude);
         setInterval(() => { update_weather_data(latitude,longitude); }, oneHour);
-    })
-}
+    });
+};
 
 if (navigator.geolocation){                             // Does browser support Geolocation?
     navigator.geolocation.getCurrentPosition(
@@ -190,7 +190,7 @@ if (navigator.geolocation){                             // Does browser support 
             console.log("GeoLocation Permission Denied");
             if (error.code === GeolocationPositionError.PERMISSION_DENIED){
                 manual_weather("GeoLocation Permission Denied");
-            }
+            };
         }
     );
 
@@ -198,7 +198,7 @@ if (navigator.geolocation){                             // Does browser support 
     // Attempt manual input
     console.log("This browser does not support Geo Location services.");
     manual_weather("Browser does not support GeoLocation service");
-}
+};
 
 
 // Market Data Display
@@ -208,7 +208,7 @@ function update_market_data(){
     fetch("https://api.coingecko.com/api/v3/coins/ethereum?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=true")
     .then(result => {
         if (result.ok){ return result.json(); }
-        else { console.log(response); throw Error("Coin Gecko API failed"); }
+        else { console.log(response); throw Error("Coin Gecko API failed"); };
     })
     .then(data => {
 
@@ -273,7 +273,7 @@ function update_market_data(){
             timePoint.setUTCHours(timePoint.getUTCHours() + 1);
             // And get its string 
             labels.push(timePoint.toString().slice(4, 21));
-        }
+        };
 
         // Refer to chartjs config docs
         const config = {
@@ -324,6 +324,6 @@ function update_market_data(){
             <p class="inline">Failed to load coin data.</p>
         `;
     });
-}
+};
 update_market_data();
 setInterval( () => { update_market_data(); }, oneHour);
