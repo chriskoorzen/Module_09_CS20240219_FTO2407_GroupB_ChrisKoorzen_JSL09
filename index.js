@@ -131,20 +131,21 @@ function manual_weather(header_message){
     const c_form = document.createElement("form");
 
     c_form.innerHTML = `
-        <label for="latitude">Latitude</label>
-        <input class="text-black"
+        <label class="text-sm" for="latitude">Latitude</label>
+        <input class="text-black rounded-md text-sm mb-2"
             type="number" id="latitude" min="-90" max="90" step="0.01" required>
         <br>
-        <label for="longitude">Longitude</label>
-        <input class="text-black"
+        <label class="text-sm" for="longitude">Longitude</label>
+        <input class="text-black rounded-md text-sm mb-2"
             type="number" id="longitude" min="-180" max="180" step="0.01" required>
         <br>
-        <button type="submit">Get Weather Forecast</button>
+        <button class="rounded-lg bg-gray-800 p-2" type="submit">Get Weather Forecast</button>
     `;
 
     weather_tab.innerHTML = `
         <p>${header_message}</p>
-        <p>Manually get weather forecast</p>
+        <hr class="my-3">
+        <p text-sm>Manually get weather forecast:</p>
     `;
     weather_tab.append(c_form);
 
@@ -175,6 +176,7 @@ if (navigator.geolocation){                             // Does browser support 
         error => {
             // Attempt manual input
             console.log(error);
+            console.log("GeoLocation Permission Denied");
             if (error.code === GeolocationPositionError.PERMISSION_DENIED){
                 manual_weather("GeoLocation Permission Denied");
             }
