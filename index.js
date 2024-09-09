@@ -1,6 +1,8 @@
 "use strict";
 import { OpenWeatherKey } from "./keys.js";
 
+const oneMinute = 60 * 1000;        // 60 seconds x 1000 milliseconds
+const onehour = 60 * 60 * 1000;     // 60 minutes x 60 seconds x 1000 milliseconds
 
 // Get a random background image
 fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=nature")
@@ -26,7 +28,6 @@ fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&que
 
 // Time display
 // Run once, then every minute thereafter
-const oneMinute = 60 * 1000;        // 60 seconds x 1000 milliseconds
 function updateTime(){
     const time = new Date();
     const timeOptions = {
@@ -42,6 +43,7 @@ updateTime();
 setInterval(() => { updateTime(); }, oneMinute);
 
 // Weather Display
+// Run once, then every hour thereafter
 if (navigator.geolocation){                             // Does browser support Geolocation?
     navigator.geolocation.getCurrentPosition(
         success => {
@@ -138,7 +140,9 @@ if (navigator.geolocation){                             // Does browser support 
 
 // Market Data Display
 // We're interested in Ethereum only
-fetch("https://api.coingecko.com/api/v3/coins/ethereum?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=true")
+// Run once, then every hour thereafter
+function update_market_data(){
+    fetch("https://api.coingecko.com/api/v3/coins/ethereum?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=true")
     .then(result => {
         if (result.ok){ return result.json(); }
         else { console.log(response); throw Error("Coin Gecko API failed"); }
@@ -251,3 +255,6 @@ fetch("https://api.coingecko.com/api/v3/coins/ethereum?localization=false&ticker
         alert("Something broke. Check console");        // Failures shouldn't be silent
         console.log(error);
     });
+}
+update_market_data();
+setInterval( () => { update_market_data(); }, onehour);
