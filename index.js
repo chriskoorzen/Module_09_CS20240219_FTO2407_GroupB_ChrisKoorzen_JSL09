@@ -70,11 +70,30 @@ if (navigator.geolocation){                             // Does browser support 
                         <hr class="my-3">
                         <div class="flex flex-row justify-between">
                             <div>
-                                <p>Wind</p>
+                                <p>Wind from ${
+                                    (res.wind.deg > 337 || res.wind.deg < 23) ? "N":
+                                    (res.wind.deg >= 23 && res.wind.deg < 68) ? "NE":
+                                    (res.wind.deg >= 68 && res.wind.deg < 113) ? "E":
+                                    (res.wind.deg >= 113 && res.wind.deg < 158) ? "SE":
+                                    (res.wind.deg >= 158 && res.wind.deg < 203) ? "S":
+                                    (res.wind.deg >= 203 && res.wind.deg < 248) ? "SW":
+                                    (res.wind.deg >= 248 && res.wind.deg < 293) ? "W":
+                                    "NW"
+                                } direction</p>
                                 <p>${res.wind.speed} km/h</p>
                                 <p>Gusts of ${res.wind.gust} km/h</p>
                             </div>
-                            <div class="rounded-full bg-stone-600 size-20">${res.wind.deg}</div>
+                            <div class="rounded-full bg-stone-600 size-20">
+                                <svg class="h-16 mx-auto mt-2" style="rotate:${180+res.wind.deg}deg;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 40 210" preserveAspectRatio="xMidYMid meet" >
+                                    <g fill="none" stroke="orange" stroke-width="5" stroke-linejoin="round">
+                                        <path d="M 20 10 V 100" stroke-dasharray="5,6"></path>
+                                        <path d="M 20 100 V 200"></path>
+                                        <path d="M 0 40 L 20 10 L 40 40"></path>
+                                        <path d="M 0 180 L 20 150 L 40 180"></path>
+                                        <path d="M 0 200 L 20 170 L 40 200"></path>
+                                    </g>
+                                </svg>
+                            </div>
                         </div>
                         <hr class="my-3">
                         <div class="flex flex-row justify-between">
