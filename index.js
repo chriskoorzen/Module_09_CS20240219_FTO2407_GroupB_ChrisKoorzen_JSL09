@@ -58,7 +58,7 @@ function update_weather_data(lat, lon){
         <div class="flex flex-row justify-between items-center">
             <div class="mr-8">
                 <p class="text-3xl">${data.name}</p>
-                ${data.weather.map(obj => "<p>"+obj.description+"</p>").join('')}
+                ${data.weather.map(obj => '<p class="capitalize">'+obj.description+"</p>").join('')}
             </div>
             <div class="">
                 <img class="inline" src="https://openweathermap.org/img/wn/${data.weather[0].icon}.png"/>
@@ -103,8 +103,8 @@ function update_weather_data(lat, lon){
             </div>
             <hr class="my-3">
             <div class="flex flex-row justify-between">
-                <p>rise: ${ (new Date(data.sys.sunrise*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
-                <p>set: ${ (new Date(data.sys.sunset*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
+                <p><img class="inline" src="./include/icons/weather/sunrise.png"/> ${ (new Date(data.sys.sunrise*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
+                <p><img class="inline" src="./include/icons/weather/sunset.png"/> ${ (new Date(data.sys.sunset*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
             </div>
         </div>`;
 
