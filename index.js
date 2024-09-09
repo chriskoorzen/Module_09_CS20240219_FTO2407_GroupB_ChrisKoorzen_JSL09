@@ -112,9 +112,11 @@ function update_weather_data(lat, lon){
         weather.innerHTML = weather_content;
 
         // Register event listener to toggle 'weather-extra'
-        weather.addEventListener("click", () => {
+        // Prefer "onclick" to "addEventlistener" to ensure only one callback is ever registered
+        // Necessary when calling this function body multiple times
+        weather.onclick = () => {
             document.getElementById("weather-extra").classList.toggle("hidden");
-        });
+        };
 
     })
     .catch(error => {
@@ -242,9 +244,11 @@ function update_market_data(){
         coin.innerHTML = coin_content;
 
         // Register event listener to toggle 'crypto-extra'
-        coin.addEventListener("click", () => {
+        // Prefer "onclick" to "addEventlistener" to ensure only one callback is ever registered
+        // Necessary when calling this function body multiple times
+        coin.onclick = () => {
             document.getElementById("crypto-extra").classList.toggle("hidden");
-        });
+        };
 
         // --- Create a line chart using sparkline data from CoinGecko api ---
         // Sparkline data is updated every 6 hours
