@@ -130,6 +130,7 @@ function update_weather_data(lat, lon){
     });
 };
 
+// Method to manually get weather data based on location
 function manual_weather(header_message){
     const weather_tab = document.getElementById("weather");
 
@@ -148,6 +149,7 @@ function manual_weather(header_message){
         <button class="rounded-lg bg-gray-800 p-2" type="submit">Get Weather Forecast</button>
     `;
 
+    // Use "header_message" to explain why we are asking for a manual input
     weather_tab.innerHTML = `
         <p>${header_message}</p>
         <hr class="my-3">
@@ -159,7 +161,7 @@ function manual_weather(header_message){
     c_form.addEventListener("submit", (event) =>{
         event.preventDefault();
         
-        // Set loading image
+        // Set loading image while we wait for API response
         weather_tab.innerHTML = `
             <img class="size-12 inline" src="./include/icons/loading-transparent-bg.gif">
             <p class="inline">Loading weather data...</p>
@@ -174,7 +176,10 @@ function manual_weather(header_message){
     });
 };
 
-if (navigator.geolocation){                             // Does browser support Geolocation?
+// Does browser support Geolocation?
+// If yes, we can automatically retrieve position coordinates for weather data
+// On failure cases, fall back to manual input of coordinates to get weather data
+if (navigator.geolocation){
     navigator.geolocation.getCurrentPosition(
         success => {
             // Attempt automatic weather retrieval
@@ -245,16 +250,15 @@ function update_market_data(){
         };
 
         // --- Create a line chart using sparkline data from CoinGecko api ---
-        // Sparkline data is updated every 6 hours
-        // https://support.coingecko.com/hc/en-us/articles/4538729548569-How-often-does-the-price-data-update-for-the-sparkline-in-coins-markets-update
-        // Assume update intervals at 00:00, 06:00, 12:00, 18:00 UTC (tested)
-        // Expect a 168-element array (price for each hour for last 7 days)
+        // Sparkline data is updated every 6 hours                              https://support.coingecko.com/hc/en-us/articles/4538729548569-How-often-does-the-price-data-update-for-the-sparkline-in-coins-markets-update
+        // Expect an ordered 168-element array (price for each hour for last 7 days)
 
+        // - Build a Label Array for x-axis to map to price data -
         // Get last update time
         const timePoint = new Date(data.market_data.last_updated);
 
-        // Determine the last update time and set to the closest
-        // known update interval
+        // Set time to the closest known update interval hour
+        // Assume update intervals at 00:00, 06:00, 12:00, 18:00 UTC (tested)
         timePoint.getUTCHours() < 6 ? timePoint.setUTCHours(0, 0) :
         timePoint.getUTCHours() < 12 ? timePoint.setUTCHours(6, 0) :
         timePoint.getUTCHours() < 18 ? timePoint.setUTCHours(12, 0) :
@@ -263,14 +267,11 @@ function update_market_data(){
         // Rewind to 7 days ago, plus 1 hour to init loop addition below
         timePoint.setUTCHours(timePoint.getUTCHours() - (168 + 1));
 
-        // Build label Array for x-axis
         // This maps price data to its hourly status (168 price data points)
         const labels = new Array();
         for (let i=0; i < 168; i++){
-            // Move forward by one hour
-            timePoint.setUTCHours(timePoint.getUTCHours() + 1);
-            // And get its string 
-            labels.push(timePoint.toString().slice(4, 21));
+            timePoint.setUTCHours(timePoint.getUTCHours() + 1);     // Move forward by one hour
+            labels.push(timePoint.toString().slice(4, 21));         // And get its string 
         };
 
         // Refer to chartjs config docs
