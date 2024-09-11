@@ -187,17 +187,12 @@ if (navigator.geolocation){                             // Does browser support 
         },
         error => {
             // Attempt manual input
-            console.log(error);
-            console.log("GeoLocation Permission Denied");
-            if (error.code === GeolocationPositionError.PERMISSION_DENIED){
-                manual_weather("GeoLocation Permission Denied");
-            };
+            manual_weather(error.message);
         }
     );
 
 } else {
     // Attempt manual input
-    console.log("This browser does not support Geo Location services.");
     manual_weather("Browser does not support GeoLocation service");
 };
 
