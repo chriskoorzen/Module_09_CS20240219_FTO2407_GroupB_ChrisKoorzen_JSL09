@@ -11,10 +11,9 @@ fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&que
         else { console.log(response); throw Error("Scrimba Image API failed"); }
     })
     .then(data => {
-        console.log(data.urls.full);
-        console.log(data.user.name);
         document.body.style.backgroundImage = `url(${data.urls.full})`;
         document.getElementById("photographer").textContent = data.user.name;
+        document.getElementById("photo-location").textContent = data.location.name;
     })
     .catch(error => {
         alert("Something broke. Check console");        // Failures shouldn't be silent
