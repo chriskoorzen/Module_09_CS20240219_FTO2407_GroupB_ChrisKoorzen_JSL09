@@ -6,8 +6,8 @@ const oneHour = 60 * 60 * 1000;     // 60 minutes x 60 seconds x 1000 millisecon
 
 // Get a random background image
 fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=nature")
-    .then(result => {
-        if (result.ok){ return result.json(); }
+    .then(response => {
+        if (response.ok){ return response.json(); }
         else { console.log(response); throw Error("Scrimba Image API failed"); }
     })
     .then(data => {
@@ -207,8 +207,8 @@ if (navigator.geolocation){                             // Does browser support 
 // Run once, then every hour thereafter
 function update_market_data(){
     fetch("https://api.coingecko.com/api/v3/coins/ethereum?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=true")
-    .then(result => {
-        if (result.ok){ return result.json(); }
+    .then(response => {
+        if (response.ok){ return response.json(); }
         else { console.log(response); throw Error("Coin Gecko API failed"); };
     })
     .then(data => {
