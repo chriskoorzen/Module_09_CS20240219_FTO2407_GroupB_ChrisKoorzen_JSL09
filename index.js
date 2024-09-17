@@ -1,8 +1,7 @@
 "use strict";
 import { OpenWeatherKey } from "./keys.js";
 
-const oneMinute = 60 * 1000;        // 60 seconds x 1000 milliseconds
-const oneHour = 60 * 60 * 1000;     // 60 minutes x 60 seconds x 1000 milliseconds
+const gcsKey = "w_coords";          // geographic coordinate system data key for localStorage
 
 
 // Get a random background image from remote location
@@ -26,7 +25,6 @@ function updateBackground(){
             document.getElementById("photographer").textContent = "Kalen Emsley";
         });
 };
-updateBackground();
 
 // Time display
 // Run once, then every minute thereafter
@@ -41,101 +39,117 @@ function updateTime(){
     document.getElementById("clock").textContent = `${time.toLocaleString("en-us", timeOptions).slice(0,8)}`;
     document.getElementById("timezone").textContent = `${time.toLocaleString("en-us", timeOptions).slice(9)}`;
 };
-updateTime();
-setInterval(() => { updateTime(); }, oneMinute);
 
 // Weather Display
 // Run once, then every hour thereafter
-function update_weather_data(lat, lon){
-    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OpenWeatherKey}&units=metric`)
-    .then(response => {
-        if (response.ok) { return response.json(); }
-        else { console.log(response); throw Error("OpenWeatherMap API failed");}
-    })
-    .then(data => {
-
-        // Main weather widget creation
-        const weather_content = `
-        <div class="flex flex-row justify-between items-center">
-            <div class="mr-8">
-                <p class="text-3xl">${data.name}</p>
-                ${data.weather.map(obj => '<p class="capitalize">'+obj.description+"</p>").join('')}
-            </div>
-            <div class="">
-                <img class="inline" src="https://openweathermap.org/img/wn/${data.weather[0].icon}.png"/>
-                <p>${data.main.temp}&deg;C</p>
-            </div>
-        </div>
-        <hr class="my-3">
-        <div id="weather-extra" class="hidden">
-            <div>
-                <p>Feels like ${data.main.feels_like}&deg;C</p>
-                <p>Max ${Math.round(data.main.temp_max)}&deg;C Min ${Math.round(data.main.temp_min)}&deg;C</p>
-                <p>Humidity: ${data.main.humidity}%</p>
-                <p>Cloud cover: ${data.clouds.all}%</p>
-            </div>
-            <hr class="my-3">
-            <div class="flex flex-row justify-between">
-                <div>
-                    <p>Wind from ${
-                        (data.wind.deg > 337 || data.wind.deg < 23) ? "N":
-                        (data.wind.deg >= 23 && data.wind.deg < 68) ? "NE":
-                        (data.wind.deg >= 68 && data.wind.deg < 113) ? "E":
-                        (data.wind.deg >= 113 && data.wind.deg < 158) ? "SE":
-                        (data.wind.deg >= 158 && data.wind.deg < 203) ? "S":
-                        (data.wind.deg >= 203 && data.wind.deg < 248) ? "SW":
-                        (data.wind.deg >= 248 && data.wind.deg < 293) ? "W":
-                        "NW"
-                    } direction</p>
-                    <p>${data.wind.speed} km/h</p>
-                    ${ data.wind.gust ? "<p>Gusts of " + data.wind.gust + "km/h</p>": "" }
-                </div>
-                <div class="rounded-full bg-stone-600 size-20">
-                    <svg class="h-16 mx-auto mt-2" style="rotate:${180+data.wind.deg}deg;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 40 210" preserveAspectRatio="xMidYMid meet" >
-                        <g fill="none" stroke="orange" stroke-width="5" stroke-linejoin="round">
-                            <path d="M 20 10 V 100" stroke-dasharray="5,6"></path>
-                            <path d="M 20 100 V 200"></path>
-                            <path d="M 0 40 L 20 10 L 40 40"></path>
-                            <path d="M 0 180 L 20 150 L 40 180"></path>
-                            <path d="M 0 200 L 20 170 L 40 200"></path>
-                        </g>
-                    </svg>
-                </div>
-            </div>
-            <hr class="my-3">
-            <div class="flex flex-row justify-between">
-                <p><img class="inline" src="./include/icons/weather/sunrise.png"/> ${ (new Date(data.sys.sunrise*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
-                <p><img class="inline" src="./include/icons/weather/sunset.png"/> ${ (new Date(data.sys.sunset*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
-            </div>
-        </div>`;
-
-        // Add to document
-        const weather = document.getElementById("weather");
-        weather.innerHTML = weather_content;
-
-        // Register event listener to toggle 'weather-extra'
-        // Prefer "onclick" to "addEventlistener" to ensure only one callback is ever registered
-        // Necessary when calling this function body multiple times
-        weather.onclick = () => {
-            document.getElementById("weather-extra").classList.toggle("hidden");
-        };
-
-    })
-    .catch(error => {
-        alert("Something broke. Check console");
-        console.log(error);
+function updateWeather(){
+    
+    if (localStorage.getItem(gcsKey) === null){
+        getCoordinates();
+    }
+    else {
+        const c = JSON.parse(localStorage.getItem(gcsKey));
         
-        // Set error content display
-        document.getElementById("weather").innerHTML = `
-            <img class="size-12 inline" src="./include/icons/error.png">
-            <p class="inline">Failed to load weather data.</p>
-        `;
-    });
+        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${c.latitude}&lon=${c.longitude}&appid=${OpenWeatherKey}&units=metric`)
+        .then(response => {
+            if (response.ok) { return response.json(); }
+            else { console.log(response); throw Error("OpenWeatherMap API failed");}
+        })
+        .then(data => {
+
+            // Main weather widget creation
+            const weather_content = `
+            <div class="flex flex-row justify-between items-center">
+                <div class="mr-8">
+                    <p class="text-3xl">${data.name}</p>
+                    ${data.weather.map(obj => '<p class="capitalize">'+obj.description+"</p>").join('')}
+                </div>
+                <div class="">
+                    <img class="inline" src="https://openweathermap.org/img/wn/${data.weather[0].icon}.png"/>
+                    <p>${data.main.temp}&deg;C</p>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div id="weather-extra" class="hidden">
+                <div>
+                    <p>Feels like ${data.main.feels_like}&deg;C</p>
+                    <p>Max ${Math.round(data.main.temp_max)}&deg;C Min ${Math.round(data.main.temp_min)}&deg;C</p>
+                    <p>Humidity: ${data.main.humidity}%</p>
+                    <p>Cloud cover: ${data.clouds.all}%</p>
+                </div>
+                <hr class="my-3">
+                <div class="flex flex-row justify-between">
+                    <div>
+                        <p>Wind from ${
+                            (data.wind.deg > 337 || data.wind.deg < 23) ? "N":
+                            (data.wind.deg >= 23 && data.wind.deg < 68) ? "NE":
+                            (data.wind.deg >= 68 && data.wind.deg < 113) ? "E":
+                            (data.wind.deg >= 113 && data.wind.deg < 158) ? "SE":
+                            (data.wind.deg >= 158 && data.wind.deg < 203) ? "S":
+                            (data.wind.deg >= 203 && data.wind.deg < 248) ? "SW":
+                            (data.wind.deg >= 248 && data.wind.deg < 293) ? "W":
+                            "NW"
+                        } direction</p>
+                        <p>${data.wind.speed} km/h</p>
+                        ${ data.wind.gust ? "<p>Gusts of " + data.wind.gust + "km/h</p>": "" }
+                    </div>
+                    <div class="rounded-full bg-stone-600 size-20">
+                        <svg class="h-16 mx-auto mt-2" style="rotate:${180+data.wind.deg}deg;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 40 210" preserveAspectRatio="xMidYMid meet" >
+                            <g fill="none" stroke="orange" stroke-width="5" stroke-linejoin="round">
+                                <path d="M 20 10 V 100" stroke-dasharray="5,6"></path>
+                                <path d="M 20 100 V 200"></path>
+                                <path d="M 0 40 L 20 10 L 40 40"></path>
+                                <path d="M 0 180 L 20 150 L 40 180"></path>
+                                <path d="M 0 200 L 20 170 L 40 200"></path>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+                <hr class="my-3">
+                <div class="flex flex-row justify-between">
+                    <p><img class="inline" src="./include/icons/weather/sunrise.png"/> ${ (new Date(data.sys.sunrise*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
+                    <p><img class="inline" src="./include/icons/weather/sunset.png"/> ${ (new Date(data.sys.sunset*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
+                </div>
+                <button id="update-location" class="w-full bg-slate-500 active:bg-slate-700 rounded-lg mt-4 py-3">Update Location</button>
+            </div>`;
+
+            // Add to document
+            const weather = document.getElementById("weather");
+            weather.innerHTML = weather_content;
+
+            // Register event listener to toggle 'weather-extra'
+            // Prefer "onclick" to "addEventlistener" to ensure only one callback is ever registered
+            // Necessary when calling this function body multiple times
+            weather.onclick = () => {
+                // This element may not exist when we try to update our location
+                try { document.getElementById("weather-extra").classList.toggle("hidden"); }
+                catch (TypeError) {};
+            };
+            // Trigger the location reset function
+            document.getElementById("update-location").onclick = (event) => {
+                event.stopPropagation();        // Don't trigger weathermenu toggle
+                updateCoordinates();
+            };
+
+        })
+        .catch(error => {
+            alert("Something broke. Check console");
+            console.log(error);
+            
+            // Set error content display
+            document.getElementById("weather").innerHTML = `
+                <img class="size-12 inline" src="./include/icons/error.png">
+                <p class="inline">Failed to load weather data.</p>
+            `;
+        });
+    };
+    
 };
 
 // Get coordinate data for weather API call.
 // Save to localStorage for future use
 function getCoordinates(){
+    
     // Method to manually get location data
     function manual_weather(header_message){
         const weather_tab = document.getElementById("weather");
@@ -163,22 +177,26 @@ function getCoordinates(){
         `;
         weather_tab.append(c_form);
 
-        //  Process user inputs
+        // Process user inputs
         c_form.addEventListener("submit", (event) =>{
             event.preventDefault();
             
-            // Set loading image while we wait for API response
+            // Set loading image while we wait for next actions
             weather_tab.innerHTML = `
                 <img class="size-12 inline" src="./include/icons/loading-transparent-bg.gif">
                 <p class="inline">Loading weather data...</p>
             `;
 
-            const latitude =  c_form.elements["latitude"].value;
-            const longitude = c_form.elements["longitude"].value;
+            // Save data to localStorage
+            localStorage.setItem(gcsKey, JSON.stringify(
+                {
+                    latitude:  c_form.elements["latitude"].value,
+                    longitude: c_form.elements["longitude"].value
+                }
+            ));
 
-            // Call once and set interval
-            update_weather_data(latitude,longitude);
-            setInterval(() => { update_weather_data(latitude,longitude); }, oneHour);
+            // Schedule updates
+            scheduleWeather();
         });
     };
 
@@ -186,15 +204,26 @@ function getCoordinates(){
     // If yes, we can automatically retrieve position coordinates for weather data
     // On failure cases, fall back to manual input of coordinates to get weather data
     if (navigator.geolocation){
+
+        // Set loading image while we wait for next actions
+        document.getElementById("weather").innerHTML = `
+            <img class="size-12 inline" src="./include/icons/loading-transparent-bg.gif">
+            <p class="inline">Loading weather data...</p>
+        `;
+
+        // Attempt automatic weather retrieval
         navigator.geolocation.getCurrentPosition(
             success => {
-                // Attempt automatic weather retrieval
-                const latitude = success.coords.latitude;
-                const longitude = success.coords.longitude;
-
-                // Call once and set interval
-                update_weather_data(latitude, longitude);
-                setInterval(() => { update_weather_data(latitude,longitude); }, oneHour);
+                // Save data to localStorage
+                localStorage.setItem(gcsKey, JSON.stringify(
+                    {
+                        latitude:  success.coords.latitude,
+                        longitude: success.coords.longitude
+                    }
+                ));
+                
+                // Schedule updates
+                scheduleWeather();
             },
             error => {
                 // Attempt manual input
@@ -206,6 +235,18 @@ function getCoordinates(){
         // Attempt manual input
         manual_weather("Browser does not support GeoLocation service");
     };
+};
+
+// Clear saved coordinates and update
+function updateCoordinates(){
+    // Clear data from localStorage
+    localStorage.removeItem(gcsKey);
+
+    // Cancel scheduled interval, if any
+    clearInterval(weatherTask);
+
+    // Restart weather loop
+    getCoordinates();
 };
 
 // Market Data Display
@@ -330,5 +371,29 @@ function update_market_data(){
         `;
     });
 };
+
+
+/* * * * * * * * * * * *
+ * Init and Scheduling *
+ * * * * * * * * * * * */
+const oneMinute = 60 * 1000;        // 60 seconds x 1000 milliseconds
+const oneHour = 60 * 60 * 1000;     // 60 minutes x 60 seconds x 1000 milliseconds
+
+let timeTask, marketTask, weatherTask;
+
+updateBackground();
+
+updateTime();
+timeTask = setInterval(() => { updateTime(); }, oneMinute);
+
 update_market_data();
-setInterval( () => { update_market_data(); }, oneHour);
+marketTask = setInterval(() => { update_market_data(); }, oneHour);
+
+updateWeather();
+function scheduleWeather(){
+    /* Because waiting for coordinates can take an uncertain, possibly unlimited amount of time
+       it is best to trigger this via a function call that is embedded within the callbacks of
+       the coordinate return functions. */
+    updateWeather();
+    weatherTask = setInterval(() => { updateWeather(); }, oneHour);
+};
