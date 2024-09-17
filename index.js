@@ -1,9 +1,10 @@
 "use strict";
 import { OpenWeatherKey } from "./keys.js";
 
-const gcsKey = "w_coords";          // geographic coordinate system data key for localStorage
+const gcsKey = "w_coords";          // (geographic coordinate system) key for localStorage data
 
 
+// --- BACKGROUND ---
 // Get a random background image from remote location
 function updateBackground(){
     fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=nature")
@@ -26,8 +27,9 @@ function updateBackground(){
         });
 };
 
+
+// --- TIME ---
 // Time display
-// Run once, then every minute thereafter
 function updateTime(){
     const time = new Date();
     const timeOptions = {
@@ -40,8 +42,9 @@ function updateTime(){
     document.getElementById("timezone").textContent = `${time.toLocaleString("en-us", timeOptions).slice(9)}`;
 };
 
+
+// --- WEATHER ---
 // Weather Display
-// Run once, then every hour thereafter
 function updateWeather(){
     
     if (localStorage.getItem(gcsKey) === null){
@@ -151,7 +154,7 @@ function updateWeather(){
 function getCoordinates(){
     
     // Method to manually get location data
-    function manual_weather(header_message){
+    function getManualCoordinates(header_message){
         const weather_tab = document.getElementById("weather");
 
         // Construct a form to receive manual inputs from user
@@ -227,13 +230,13 @@ function getCoordinates(){
             },
             error => {
                 // Attempt manual input
-                manual_weather(error.message);
+                getManualCoordinates(error.message);
             }
         );
 
     } else {
         // Attempt manual input
-        manual_weather("Browser does not support GeoLocation service");
+        getManualCoordinates("Browser does not support GeoLocation service");
     };
 };
 
@@ -249,10 +252,11 @@ function updateCoordinates(){
     getCoordinates();
 };
 
+
+// --- MARKET ---
 // Market Data Display
 // We're interested in Ethereum only
-// Run once, then every hour thereafter
-function update_market_data(){
+function updateMarket(){
     fetch("https://api.coingecko.com/api/v3/coins/ethereum?localization=false&tickers=false&community_data=false&developer_data=false&sparkline=true")
     .then(response => {
         if (response.ok){ return response.json(); }
@@ -386,8 +390,8 @@ updateBackground();
 updateTime();
 timeTask = setInterval(() => { updateTime(); }, oneMinute);
 
-update_market_data();
-marketTask = setInterval(() => { update_market_data(); }, oneHour);
+updateMarket();
+marketTask = setInterval(() => { updateMarket(); }, oneHour);
 
 updateWeather();
 function scheduleWeather(){
