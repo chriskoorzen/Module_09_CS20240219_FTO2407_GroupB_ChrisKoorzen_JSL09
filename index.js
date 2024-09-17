@@ -242,11 +242,11 @@ function getCoordinates(){
 
 // Clear saved coordinates and update
 function updateCoordinates(){
-    // Clear data from localStorage
-    localStorage.removeItem(gcsKey);
-
     // Cancel scheduled interval, if any
     clearInterval(weatherTask);
+    
+    // Clear data from localStorage
+    localStorage.removeItem(gcsKey);
 
     // Restart weather loop
     getCoordinates();
