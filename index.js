@@ -133,77 +133,80 @@ function update_weather_data(lat, lon){
     });
 };
 
-// Method to manually get weather data based on location
-function manual_weather(header_message){
-    const weather_tab = document.getElementById("weather");
+// Get coordinate data for weather API call.
+// Save to localStorage for future use
+function getCoordinates(){
+    // Method to manually get location data
+    function manual_weather(header_message){
+        const weather_tab = document.getElementById("weather");
 
-    // Construct a form to receive manual inputs from user
-    const c_form = document.createElement("form");
+        // Construct a form to receive manual inputs from user
+        const c_form = document.createElement("form");
 
-    c_form.innerHTML = `
-        <label class="text-sm" for="latitude">Latitude</label>
-        <input class="text-black rounded-md text-sm mb-2"
-            type="number" id="latitude" min="-90" max="90" step="0.01" required>
-        <br>
-        <label class="text-sm" for="longitude">Longitude</label>
-        <input class="text-black rounded-md text-sm mb-2"
-            type="number" id="longitude" min="-180" max="180" step="0.01" required>
-        <br>
-        <button class="rounded-lg bg-gray-800 p-2" type="submit">Get Weather Forecast</button>
-    `;
-
-    // Use "header_message" to explain why we are asking for a manual input
-    weather_tab.innerHTML = `
-        <p>${header_message}</p>
-        <hr class="my-3">
-        <p text-sm>Manually get weather forecast:</p>
-    `;
-    weather_tab.append(c_form);
-
-    //  Process user inputs
-    c_form.addEventListener("submit", (event) =>{
-        event.preventDefault();
-        
-        // Set loading image while we wait for API response
-        weather_tab.innerHTML = `
-            <img class="size-12 inline" src="./include/icons/loading-transparent-bg.gif">
-            <p class="inline">Loading weather data...</p>
+        c_form.innerHTML = `
+            <label class="text-sm" for="latitude">Latitude</label>
+            <input class="text-black rounded-md text-sm mb-2"
+                type="number" id="latitude" min="-90" max="90" step="0.01" required>
+            <br>
+            <label class="text-sm" for="longitude">Longitude</label>
+            <input class="text-black rounded-md text-sm mb-2"
+                type="number" id="longitude" min="-180" max="180" step="0.01" required>
+            <br>
+            <button class="rounded-lg bg-gray-800 p-2" type="submit">Get Weather Forecast</button>
         `;
 
-        const latitude =  c_form.elements["latitude"].value;
-        const longitude = c_form.elements["longitude"].value;
+        // Use "header_message" to explain why we are asking for a manual input
+        weather_tab.innerHTML = `
+            <p>${header_message}</p>
+            <hr class="my-3">
+            <p text-sm>Manually get weather forecast:</p>
+        `;
+        weather_tab.append(c_form);
 
-        // Call once and set interval
-        update_weather_data(latitude,longitude);
-        setInterval(() => { update_weather_data(latitude,longitude); }, oneHour);
-    });
-};
+        //  Process user inputs
+        c_form.addEventListener("submit", (event) =>{
+            event.preventDefault();
+            
+            // Set loading image while we wait for API response
+            weather_tab.innerHTML = `
+                <img class="size-12 inline" src="./include/icons/loading-transparent-bg.gif">
+                <p class="inline">Loading weather data...</p>
+            `;
 
-// Does browser support Geolocation?
-// If yes, we can automatically retrieve position coordinates for weather data
-// On failure cases, fall back to manual input of coordinates to get weather data
-if (navigator.geolocation){
-    navigator.geolocation.getCurrentPosition(
-        success => {
-            // Attempt automatic weather retrieval
-            const latitude = success.coords.latitude;
-            const longitude = success.coords.longitude;
+            const latitude =  c_form.elements["latitude"].value;
+            const longitude = c_form.elements["longitude"].value;
 
             // Call once and set interval
-            update_weather_data(latitude, longitude);
+            update_weather_data(latitude,longitude);
             setInterval(() => { update_weather_data(latitude,longitude); }, oneHour);
-        },
-        error => {
-            // Attempt manual input
-            manual_weather(error.message);
-        }
-    );
+        });
+    };
 
-} else {
-    // Attempt manual input
-    manual_weather("Browser does not support GeoLocation service");
+    // Does browser support Geolocation?
+    // If yes, we can automatically retrieve position coordinates for weather data
+    // On failure cases, fall back to manual input of coordinates to get weather data
+    if (navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(
+            success => {
+                // Attempt automatic weather retrieval
+                const latitude = success.coords.latitude;
+                const longitude = success.coords.longitude;
+
+                // Call once and set interval
+                update_weather_data(latitude, longitude);
+                setInterval(() => { update_weather_data(latitude,longitude); }, oneHour);
+            },
+            error => {
+                // Attempt manual input
+                manual_weather(error.message);
+            }
+        );
+
+    } else {
+        // Attempt manual input
+        manual_weather("Browser does not support GeoLocation service");
+    };
 };
-
 
 // Market Data Display
 // We're interested in Ethereum only
