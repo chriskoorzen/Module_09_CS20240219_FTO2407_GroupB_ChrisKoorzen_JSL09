@@ -4,26 +4,29 @@ import { OpenWeatherKey } from "./keys.js";
 const oneMinute = 60 * 1000;        // 60 seconds x 1000 milliseconds
 const oneHour = 60 * 60 * 1000;     // 60 minutes x 60 seconds x 1000 milliseconds
 
-// Get a random background image
-fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=nature")
-    .then(response => {
-        if (response.ok){ return response.json(); }
-        else { console.log(response); throw Error("Scrimba Image API failed"); }
-    })
-    .then(data => {
-        document.body.style.backgroundImage = `url(${data.urls.full})`;
-        document.getElementById("photographer").textContent = data.user.name;
-        document.getElementById("photo-location").textContent = data.location.name;
-    })
-    .catch(error => {
-        alert("Something broke. Check console");        // Failures shouldn't be silent
-        console.log(error);
 
-        // Fallback Image
-        document.body.style.backgroundImage = "url(./include/mountain-photo-by-kalen-emsley.jpeg)";
-        document.getElementById("photographer").textContent = "Kalen Emsley";
-    });
+// Get a random background image from remote location
+function updateBackground(){
+    fetch("https://apis.scrimba.com/unsplash/photos/random?orientation=landscape&query=nature")
+        .then(response => {
+            if (response.ok){ return response.json(); }
+            else { console.log(response); throw Error("Scrimba Image API failed"); }
+        })
+        .then(data => {
+            document.body.style.backgroundImage = `url(${data.urls.full})`;
+            document.getElementById("photographer").textContent = data.user.name;
+            document.getElementById("photo-location").textContent = data.location.name;
+        })
+        .catch(error => {
+            alert("Something broke. Check console");        // Failures shouldn't be silent
+            console.log(error);
 
+            // Fallback Image
+            document.body.style.backgroundImage = "url(./include/mountain-photo-by-kalen-emsley.jpeg)";
+            document.getElementById("photographer").textContent = "Kalen Emsley";
+        });
+};
+updateBackground();
 
 // Time display
 // Run once, then every minute thereafter
