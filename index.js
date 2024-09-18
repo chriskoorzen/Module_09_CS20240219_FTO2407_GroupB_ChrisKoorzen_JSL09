@@ -383,14 +383,14 @@ let timeTask, marketTask, weatherTask;
 updateBackground();
 
 updateTime();
-timeTask = setInterval(() => { updateTime(); }, oneMinute);
+timeTask = setInterval(updateTime, oneMinute);
 
 updateMarket();
-marketTask = setInterval(() => { updateMarket(); }, oneHour);
+marketTask = setInterval(updateMarket, oneHour);
 
 // Function to restart this process for weather, because we may update our position.
 function scheduleWeather(){
     updateWeather();
-    weatherTask = setInterval(() => { updateWeather(); }, oneHour);
+    weatherTask = setInterval(updateWeather, oneHour);
 };
 scheduleWeather();
