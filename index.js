@@ -393,11 +393,12 @@ timeTask = setInterval(() => { updateTime(); }, oneMinute);
 updateMarket();
 marketTask = setInterval(() => { updateMarket(); }, oneHour);
 
-updateWeather();
 function scheduleWeather(){
     /* Because waiting for coordinates can take an uncertain, possibly unlimited amount of time
        it is best to trigger this via a function call that is embedded within the callbacks of
        the coordinate return functions. */
+    clearInterval(weatherTask);  // if any existed before this
     updateWeather();
     weatherTask = setInterval(() => { updateWeather(); }, oneHour);
 };
+scheduleWeather();
