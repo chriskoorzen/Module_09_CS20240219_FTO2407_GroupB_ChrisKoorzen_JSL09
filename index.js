@@ -90,7 +90,7 @@ async function updateWeather(){
                         "NW"
                     } direction</p>
                     <p>${data.wind.speed} km/h</p>
-                    ${ data.wind.gust ? "<p>Gusts of " + data.wind.gust + "km/h</p>": "" }
+                    ${ data.wind.gust ? "<p>Gusts of " + data.wind.gust + " km/h</p>": "" }
                 </div>
                 <div class="rounded-full bg-stone-600 size-20">
                     <svg class="h-16 mx-auto mt-2" style="rotate:${180+data.wind.deg}deg;" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 40 210" preserveAspectRatio="xMidYMid meet" >
@@ -179,6 +179,7 @@ function getCoordinates(){
                 event.preventDefault();
 
                 // Set loading image while we wait for next actions
+                // Effectively removes this form from the DOM
                 weather_tab.innerHTML = `
                     <img class="size-12 inline" src="./include/icons/loading-transparent-bg.gif">
                     <p class="inline">Loading weather data...</p>`;
@@ -214,7 +215,7 @@ function getCoordinates(){
                 <img class="size-12 inline" src="./include/icons/loading-transparent-bg.gif">
                 <p class="inline">Loading weather data...</p>`;
 
-                // Attempt automatic weather retrieval
+            // Attempt automatic weather retrieval
             navigator.geolocation.getCurrentPosition(
                 success => {
                     const coordinates = {
