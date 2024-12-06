@@ -1,5 +1,36 @@
 "use strict";
-import { OpenWeatherKey } from "./keys.js";
+
+import backupPhoto from "./include/mountain-photo-by-kalen-emsley.jpeg";
+import loadingIndicator from "./include/icons/loading-transparent-bg.gif";
+
+import upGreenArrow from "./include/icons/coin/arrow-up-green.png";
+import downRedArrow from "./include/icons/coin/arrow-down-red.png"
+import errorIcon from "./include/icons/error.png";
+import sunriseIcon from "./include/icons/weather/sunrise.png";
+import sunsetIcon from "./include/icons/weather/sunset.png";
+
+// Treeshake ChartJS
+import {
+    Chart,
+    CategoryScale,
+    LineController,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+} from 'chart.js';
+Chart.register(
+    CategoryScale,
+    LineController,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend
+);
 
 
 // --- BACKGROUND ---
@@ -20,7 +51,7 @@ function updateBackground(){
             console.log(error);
 
             // Fallback Image
-            document.body.style.backgroundImage = "url(./include/mountain-photo-by-kalen-emsley.jpeg)";
+            document.body.style.backgroundImage = `url(${backupPhoto})`;
             document.getElementById("photographer").textContent = "Kalen Emsley";
         });
 };
@@ -46,6 +77,20 @@ const gcsKey = "w_coords";          // (geographic coordinate system) key for lo
 
 // Weather Display
 async function updateWeather(){
+
+    const OpenWeatherKey = await import("keys.js")
+    .then(mod => mod.OpenWeatherKey)
+    .catch(error => {
+        alert("Something broke. Check console");
+        console.log(error);
+        
+        // Set error content display
+        document.getElementById("weather").innerHTML = `
+            <img class="size-12 inline" src="${errorIcon}">
+            <p class="inline">Failed to load weather data.</p>
+        `;
+    });
+    if (OpenWeatherKey === undefined) return;   // an error occured
 
     const c = await getCoordinates();
 
@@ -106,8 +151,8 @@ async function updateWeather(){
             </div>
             <hr class="my-3">
             <div class="flex flex-row justify-between">
-                <p><img class="inline" src="./include/icons/weather/sunrise.png"/> ${ (new Date(data.sys.sunrise*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
-                <p><img class="inline" src="./include/icons/weather/sunset.png"/> ${ (new Date(data.sys.sunset*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
+                <p><img class="inline" src="${sunriseIcon}"/> ${ (new Date(data.sys.sunrise*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
+                <p><img class="inline" src="${sunsetIcon}"/> ${ (new Date(data.sys.sunset*1000)).toLocaleString('en-us', {timeStyle: "short"}) }</p>
             </div>
             <button id="update-location" class="w-full bg-slate-500 active:bg-slate-700 rounded-lg mt-4 py-3">Update Location</button>
         </div>`;
@@ -137,7 +182,7 @@ async function updateWeather(){
         
         // Set error content display
         document.getElementById("weather").innerHTML = `
-            <img class="size-12 inline" src="./include/icons/error.png">
+            <img class="size-12 inline" src="${errorIcon}">
             <p class="inline">Failed to load weather data.</p>
         `;
     });    
@@ -181,7 +226,7 @@ function getCoordinates(){
                 // Set loading image while we wait for next actions
                 // Effectively removes this form from the DOM
                 weather_tab.innerHTML = `
-                    <img class="size-12 inline" src="./include/icons/loading-transparent-bg.gif">
+                    <img class="size-12 inline" src="${loadingIndicator}">
                     <p class="inline">Loading weather data...</p>`;
 
                 const coordinates = {
@@ -212,7 +257,7 @@ function getCoordinates(){
 
             // Set loading image while we wait for next actions - it may take a while
             document.getElementById("weather").innerHTML = `
-                <img class="size-12 inline" src="./include/icons/loading-transparent-bg.gif">
+                <img class="size-12 inline" src="${loadingIndicator}">
                 <p class="inline">Loading weather data...</p>`;
 
             // Attempt automatic weather retrieval
@@ -270,14 +315,14 @@ function updateMarket(){
             <p>${(data.market_data.price_change_percentage_1h_in_currency.usd).toFixed(2)}%</p>
         </div>
         <div class="flex flex-row justify-between">
-            <p><img class="inline" src="./include/icons/coin/arrow-up-green.png"> $ ${(data.market_data.high_24h.usd).toFixed(2)}</p>
-            <p><img class="inline" src="./include/icons/coin/arrow-down-red.png"> $ ${(data.market_data.low_24h.usd).toFixed(2)}</p>
+            <p><img class="inline" src="${upGreenArrow}"> $ ${(data.market_data.high_24h.usd).toFixed(2)}</p>
+            <p><img class="inline" src="${downRedArrow}"> $ ${(data.market_data.low_24h.usd).toFixed(2)}</p>
         </div>
         <hr class="my-3">
         <div id="crypto-extra" class="hidden">
             <div class="bg-gray-800 p-4 rounded-lg">
                 <p class="text-sm ml-2 py-2">Last 7 days: 
-                    <span style="color:${data.market_data.price_change_percentage_7d > 0 ? "green":"red"};">
+                    <span class="${data.market_data.price_change_percentage_7d > 0 ? "text-green-500":"text-red-500"}">
                         ${(data.market_data.price_change_percentage_7d).toFixed(2)} %
                     </span>
                 </p>
@@ -366,7 +411,7 @@ function updateMarket(){
 
         // Set error content display
         document.getElementById("crypto").innerHTML = `
-            <img class="size-12 inline" src="./include/icons/error.png">
+            <img class="size-12 inline" src="${errorIcon}">
             <p class="inline">Failed to load coin data.</p>
         `;
     });

@@ -1,0 +1,7 @@
+# Standard stuff
+node_modules
+dist
+
+# Local dev
+keys.js
+experiments
