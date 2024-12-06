@@ -1,6 +1,6 @@
-# [JSL09] Submission: Personal Dashboard Chrome Extension
+# Personal Dashboard Browser Extension
 
-Create a personal dashboard for new tab on browser.
+A personal dashboard on your new tab in the browser. Inspired by [MomentumDash](https://momentumdash.com/).
 
 ## Usage
 In order to make full use of this extension and access the OpenWeather API, you must:
